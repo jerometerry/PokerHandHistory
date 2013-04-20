@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?define RootDir  = "..\.."?>
+  <?define TrunkDir  = "..\"?>
+  <?define ImportAppDir  = "..\PokerHandHistory"?>
+  <?define ScriptsDir  = "..\PokerHandHistory.Web\Scripts"?>
+  <?define ContentDir  = "..\PokerHandHistory.Web\Content"?>
+  <?define ViewsDir  = "..\PokerHandHistory.Web\Views"?>
+  <?define WebAppDir  = "..\PokerHandHistory.Web"?>
+  <?define log4netDir  = "..\packages\log4net.2.0.0\lib\net40-full"?>
+  <?define systemDataSqliteDir  = "..\packages\System.Data.SQLite.1.0.81.0\lib\net40"?>
+  <?define DbDir  = "..\db"?>
+  <?define DocsDir  = "..\docs"?>
+
+  <?define AppName = "Poker Hand History"?>
+  <?define Version = "1.0.4"?>
+  <?define Manufacturer = "Jerome Terry"?>
+  <?define UpgradeCode = "503999f0-d24f-4b4e-a272-f789aa7c7296"?>
+  <?define PackageDescription = "Online Poker Hand Analysis Application"?>
+  <?define PackageComments = "Poker Hand History imports your online hand history files and computes statistics such as VP$IP"?>
+
+  <?define LaunchCondition_LaterVersion = "An older version of the application is installed"?>
+  <?define LaunchCondition_AnotherBuild = "Another version of the application is installed"?>
+
+  <Product Id="*" 
+           Name="$(var.AppName)" 
+           Language="1033" 
+           Version="$(var.Version)" 
+           Manufacturer="$(var.Manufacturer)" 
+           UpgradeCode="$(var.UpgradeCode)">
+    
+		<Package Description="$(var.PackageDescription)"
+             Comments="$(var.PackageComments)"
+             InstallerVersion="200" 
+             Compressed="yes" />
+
+    <Upgrade Id="$(var.UpgradeCode)">
+      <UpgradeVersion OnlyDetect="yes"
+                        Minimum="$(var.Version)"
+                        Property="NEWERVERSIONDETECTED"
+                        IncludeMinimum="no" />
+
+      <UpgradeVersion OnlyDetect="no"
+                      Maximum="$(var.Version)"
+                      Property="OLDERVERSIONBEINGUPGRADED"
+                      IncludeMaximum="no" />
+
+      <!-- Detect for changes in 4th field only -->
+      <UpgradeVersion Property="ANOTHERBUILDINSTALLED"
+               Maximum="$(var.Version)" Minimum="$(var.Version)"
+               IncludeMinimum="yes" IncludeMaximum="yes" OnlyDetect="yes" />
+      
+    </Upgrade>
+
+    <CustomAction Id="CA_BlockOlderVersionInstall" Error="$(var.LaunchCondition_LaterVersion)" />
+    <CustomAction Id="CA_BlockAnotherBuildInstall" Error="$(var.LaunchCondition_AnotherBuild)" />
+
+    <InstallExecuteSequence>
+      <Custom Action="CA_BlockOlderVersionInstall" After="FindRelatedProducts">
+        <![CDATA[NEWERVERSIONDETECTED]]>
+      </Custom>
+
+      <!-- Prevent installation on 4th version field change only -->
+      <Custom Action="CA_BlockAnotherBuildInstall" After="FindRelatedProducts">
+        <![CDATA[ANOTHERBUILDINSTALLED]]>
+      </Custom>
+
+      <LaunchConditions After="AppSearch" />
+
+      <!-- Schedule RemoveExistingProducts early -->
+      <RemoveExistingProducts After="InstallInitialize" />
+    </InstallExecuteSequence>
+
+		<Media Id="1" Cabinet="media1.cab" EmbedCab="yes" />
+
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+
+      <Directory Id='ProgramFilesFolder' Name='PFiles'>
+        <Directory Id='MANUFACTURERDIR' Name='Jerome Terry'>
+          <Directory Id='APPDIR' Name='Poker Hand History'>
+            <Component Id='Database' Guid='40FB3AB0-61C6-4556-94A8-EED7FE9CDBC3'>
+              <File Source='$(var.DbDir)\pokerhandhistory.db' />
+            </Component>
+            <Component Id='HandHistoryApplication' Guid='A6F19123-61A2-4458-AFC3-BB0AB880DEAB'>
+              <File Source='$(var.log4netDir)\log4net.dll' />
+              
+              <File Source='$(var.systemDataSqliteDir)\System.Data.Sqlite.dll' />
+              <File Source='$(var.systemDataSqliteDir)\System.Data.Sqlite.Linq.dll' />
+
+              <File Source='$(var.ImportAppDir)\app.config' Name='JeromeTerry.PokerHandHistory.exe.config' />
+              <File Source="$(var.PokerHandHistory.TargetPath)" />
+              <File Source="$(var.PokerHandHistory.PartyPoker.TargetPath)" />
+              <File Source="$(var.PokerHandHistory.Core.TargetPath)" />
+              <File Source="$(var.PokerHandHistory.Data.TargetPath)" />
+              <File Source="$(var.PokerHandHistory.IISExpress.TargetPath)" />
+              <File Source="$(var.PokerHandHistory.IISExpress.Management.TargetPath)" />
+              <File Source="$(var.PokerHandHistory.Native.TargetPath)" />
+            </Component>
+
+            <Directory Id='WEBAPPDIR' Name='Http'>
+              <Component Id='WebApplication' Guid='7697E8A7-CCF9-49CC-802D-2075772235F1'>
+                <File Source='$(var.WebAppDir)\web.config' />
+                <File Source='$(var.WebAppDir)\Global.asax' />
+              </Component>
+
+              <Directory Id='WEBAPPBINDIR' Name='bin'>
+                <Component Id='WebApplicationBin' Guid='1E92CB59-C701-4CFE-B920-6B0CCA792F59'>
+                  <File Source="$(var.PokerHandHistory.Web.TargetPath)" />
+                  <File Id="WebAppCore" Source="$(var.PokerHandHistory.Core.TargetPath)" />
+                  <File Id="WebAppData" Source="$(var.PokerHandHistory.Data.TargetPath)" />
+                  <File Id="WebApplog4net" Source='$(var.log4netDir)\log4net.dll' />
+                  <File Id="WebAppSystemDataSqlite" Source='$(var.systemDataSqliteDir)\System.Data.Sqlite.dll' />
+                  <File Id="WebAppSystemDataSqliteLinq" Source='$(var.systemDataSqliteDir)\System.Data.Sqlite.Linq.dll' />
+                </Component>
+              </Directory>
+              <Directory Id='WEBAPPCONTENTDIR' Name='Content'>
+                <Component Id='CSS' Guid='290AF9A4-3804-4C13-9092-485F515559FF'>
+                  <File Source='$(var.ContentDir)\Site.css'></File>
+                </Component>
+                
+                <Directory Id='DataTablesContentDir' Name='DataTables-1.9.2'>
+                  <Directory Id='DataTablesContentMediaDir' Name='media'>
+                    <Directory Id='DataTablesCssDir' Name='css'>
+                      <Component Id='DataTablesCssFiles' Guid='E5B3B0C7-FEDC-49A4-822B-0F87E4F45817'>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\css\demo_page.css'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\css\demo_table.css'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\css\demo_table_jui.css'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\css\jquery.dataTables.css'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\css\jquery.dataTables_themeroller.css'></File>
+                      </Component>
+                    </Directory>
+                    <Directory Id='DataTablesImagesDir' Name='images'>
+                      <Component Id='DataTablesImages' Guid='636B572C-EE62-4159-A0DE-EFF8A335B23E'>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\back_disabled.png'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\back_enabled.png'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\back_enabled_hover.png'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\favicon.ico'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\forward_disabled.png'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\forward_enabled.png'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\forward_enabled_hover.png'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\sort_asc.png'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\sort_asc_disabled.png'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\sort_both.png'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\sort_desc.png'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\sort_desc_disabled.png'></File>
+                        <File Source='$(var.ContentDir)\DataTables-1.9.2\media\images\Sorting icons.psd'></File>
+                      </Component>
+                    </Directory>
+                  </Directory>
+                </Directory>
+                
+                <Directory Id='ThemesDir' Name='themes'>
+                  <Directory Id='BaseThemeDir' Name='base'>
+
+                    <Component Id='BaseTheme' Guid='97C5CAAB-B28C-4F4B-AA99-62FD41D1E1F9'>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.accordion.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.all.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.autocomplete.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.base.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.button.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.core.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.datepicker.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.dialog.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.progressbar.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.resizable.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.selectable.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.slider.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.tabs.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery.ui.theme.css'></File>
+                      <File Source='$(var.ContentDir)\themes\base\jquery-ui.css'></File>
+                    </Component>
+                    
+                    <Directory Id='BaseThemesImagesDir' Name='images'>
+                      <Component Id='BaseThemeImages' Guid='6E00BDA2-7B91-4C66-9E5B-B9FF9AD94453'>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-bg_flat_75_ffffff_40x100.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-bg_glass_65_ffffff_1x400.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-bg_glass_75_dadada_1x400.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-bg_glass_75_e6e6e6_1x400.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-bg_glass_95_fef1ec_1x400.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-bg_highlight-soft_75_cccccc_1x100.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-icons_2e83ff_256x240.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-icons_222222_256x240.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-icons_454545_256x240.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-icons_888888_256x240.png'></File>
+                        <File Source='$(var.ContentDir)\themes\base\images\ui-icons_cd0a0a_256x240.png'></File>
+                      </Component>
+                    </Directory>
+                    
+                    <Directory Id='ThemesMinifiedDir' Name='minified'>
+                      <Directory Id='ThemesMinifiedImagesDir' Name='images'>
+                        <Component Id='ThemesMinifiedImages' Guid='37D6D2F5-572D-4C7B-BA6D-154C240678C7'>
+                          <File Id='Min_File1' Source='$(var.ContentDir)\themes\base\minified\images\ui-bg_flat_0_aaaaaa_40x100.png'></File>
+                          <File Id='Min_File2' Source='$(var.ContentDir)\themes\base\minified\images\ui-bg_flat_75_ffffff_40x100.png'></File>
+                          <File Id='Min_File3' Source='$(var.ContentDir)\themes\base\minified\images\ui-bg_glass_55_fbf9ee_1x400.png'></File>
+                          <File Id='Min_File4' Source='$(var.ContentDir)\themes\base\minified\images\ui-bg_glass_65_ffffff_1x400.png'></File>
+                          <File Id='Min_File5' Source='$(var.ContentDir)\themes\base\minified\images\ui-bg_glass_75_dadada_1x400.png'></File>
+                          <File Id='Min_File6' Source='$(var.ContentDir)\themes\base\minified\images\ui-bg_glass_75_e6e6e6_1x400.png'></File>
+                          <File Id='Min_File7' Source='$(var.ContentDir)\themes\base\minified\images\ui-bg_glass_95_fef1ec_1x400.png'></File>
+                          <File Id='Min_File8' Source='$(var.ContentDir)\themes\base\minified\images\ui-bg_highlight-soft_75_cccccc_1x100.png'></File>
+                          <File Id='Min_File9' Source='$(var.ContentDir)\themes\base\minified\images\ui-icons_2e83ff_256x240.png'></File>
+                          <File Id='Min_File10' Source='$(var.ContentDir)\themes\base\minified\images\ui-icons_222222_256x240.png'></File>
+                          <File Id='Min_File11' Source='$(var.ContentDir)\themes\base\minified\images\ui-icons_454545_256x240.png'></File>
+                          <File Id='Min_File12' Source='$(var.ContentDir)\themes\base\minified\images\ui-icons_888888_256x240.png'></File>
+                          <File Id='Min_File13' Source='$(var.ContentDir)\themes\base\minified\images\ui-icons_cd0a0a_256x240.png'></File>
+                        </Component>
+                      </Directory>
+
+                      <Component Id='ThemesMinified' Guid='1448450B-F542-4067-B739-74B24C9FF30F'>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.accordion.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.autocomplete.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.button.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.core.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.datepicker.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.dialog.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.progressbar.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.resizable.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.selectable.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.slider.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.tabs.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery.ui.theme.min.css'></File>
+                        <File Source='$(var.ContentDir)\themes\base\minified\jquery-ui.min.css'></File>
+                      </Component>
+                      
+                    </Directory>
+                    
+                  </Directory>
+                </Directory>
+              </Directory>
+              <Directory Id='WEBAPPSCRIPTSDIR' Name='Scripts'>
+                <Component Id='Scripts' Guid='CA3E99F0-CC3D-4C5E-B7D1-82D833D55320'>
+                  <File Source='$(var.ScriptsDir)\jquery-1.7.2.min.js'></File>
+                </Component>
+
+                <Directory Id='DataTablesScriptsDir' Name='DataTables-1.9.2'>
+                  <Directory Id='DataTablesScriptsMedia' Name='media'>
+                    <Directory Id='DataTablesScriptsJsDir' Name='js'>
+                      <Component Id='DataTablesJs' Guid='72007DBE-5E15-4EF4-B61B-A4D3AF75A14C'>
+                        <File Source='$(var.ScriptsDir)\DataTables-1.9.2\media\js\jquery.dataTables.min.js'></File>
+                      </Component>
+                    </Directory>  
+                  </Directory>
+                  
+                </Directory>
+              </Directory>
+              <Directory Id='WEBAPPVIEWSDIR' Name='Views'>
+                <Component Id='ViewsFiles' Guid='47017B3A-48FE-42C9-BE36-FFCC2F84CC7C'>
+                  <File Source='$(var.ViewsDir)\_ViewStart.cshtml'></File>
+                  <File Id='ViewsConfigFile' Source='$(var.ViewsDir)\Web.config'></File>
+                </Component>
+                <Directory Id='HomeViewsDir' Name='Home'>
+                  <Component Id='HomeViewsFiles' Guid='24EED80F-1838-4D53-A43B-8B8381FE2CC8'>
+                    <File Source='$(var.ViewsDir)\Home\About.cshtml'></File>
+                    <File Id='HomeIndex' Source='$(var.ViewsDir)\Home\Index.cshtml'></File>
+                  </Component>
+                </Directory>
+                <Directory Id='PlayersViewsDir' Name='Players'>
+                  <Component Id='PlayersViewsFiles' Guid='96BD1B0A-1713-4E14-9E33-DE6E5F20F4B7'>
+                    <File Id='PlayersIndex' Source='$(var.ViewsDir)\Players\Index.cshtml'></File>
+                  </Component>
+                </Directory>
+                <Directory Id='SharedViewsDir' Name='Shared'>
+                  <Component Id='SharedViewsFiles' Guid='1D5143FF-7796-462A-B608-CD9B2B65993E'>
+                    <File Source='$(var.ViewsDir)\Shared\_Layout.cshtml'></File>
+                    <File Source='$(var.ViewsDir)\Shared\Error.cshtml'></File>
+                  </Component>
+                </Directory>
+              </Directory>
+            </Directory>
+            
+          </Directory>
+        </Directory>
+      </Directory>
+
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Poker Hand History"/>
+      </Directory>
+    </Directory>
+
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="161535A7-E42F-4824-89A7-2561E08B851C">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+                  Name="Poker Hand History"
+                  Description="Online Poker Hand History Analysis Application"
+                  Target="[APPDIR]JeromeTerry.PokerHandHistory.exe"
+                  WorkingDirectory="APPDIR"/>
+        <Shortcut Id="ApplicationStartMenuHandAnalysisShortcut"
+                  Name="Hand Analysis"
+                  Description="Poker Hand History Analysis"
+                  Target="[APPDIR]JeromeTerry.PokerHandHistory.IISExpress.Management.exe"
+                  WorkingDirectory="APPDIR"/>
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Microsoft\Poker Hand History" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id='DatabaseFeature' Title='Database' Level='1'>
+      <ComponentRef Id='Database' />
+    </Feature>
+
+    <Feature Id='HandHistoryApplicationFeature' Title='Poker Hand History Application' Level='1'>
+      <ComponentRef Id='HandHistoryApplication' />
+      <ComponentRef Id='ApplicationShortcut' />
+    </Feature>
+
+    <Feature Id='WebApplicationFeature' Title='Poker Hand History Web Application' Level='1'>
+      <ComponentRef Id='WebApplication' />
+      <ComponentRef Id='WebApplicationBin' />
+      <ComponentRef Id='Scripts' />
+      <ComponentRef Id='DataTablesJs'/>
+      <ComponentRef Id='CSS' />
+      <ComponentRef Id='BaseTheme' />
+      <ComponentRef Id='BaseThemeImages' />
+      <ComponentRef Id='ThemesMinified' />
+      <ComponentRef Id='ThemesMinifiedImages' />
+      <ComponentRef Id='DataTablesCssFiles' />
+      <ComponentRef Id='DataTablesImages' />
+      <ComponentRef Id='ViewsFiles' />
+      <ComponentRef Id='HomeViewsFiles' />
+      <ComponentRef Id='PlayersViewsFiles' />
+      <ComponentRef Id='SharedViewsFiles' />
+    </Feature>
+
+    <Property Id="WIXUI_INSTALLDIR" Value="APPDIR" />
+    <UIRef Id="WixUI_InstallDir" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.DocsDir)\License.rtf" />
+	</Product>
+</Wix>

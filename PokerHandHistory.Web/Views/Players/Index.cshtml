@@ -1,0 +1,39 @@
+﻿@model IList<JeromeTerry.PokerHandHistory.Web.Models.Player>
+
+@{
+    ViewBag.Title = "Players";
+}
+
+@section head {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#playersTable').dataTable({
+                "bJQueryUI": true
+            });
+        });
+    </script>
+}
+
+<h2>Players</h2>
+
+<table id="playersTable">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Player</th>
+            <th>Hands</th>
+            <th>Imported</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var player in Model) { 
+            <tr>
+                <td>@player.Id</td>
+                <td>@player.Name</td>
+                <td>@player.HandPlayerCount</td>
+                <td>@player.DateAdded</td>
+            </tr>
+        }
+    </tbody>
+</table>

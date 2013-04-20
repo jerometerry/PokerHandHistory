@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="JeromeTerry.PokerHandHistory.IISExpress.Management.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="DatabaseFileName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">pokerhandhistory.db</Value>
+    </Setting>
+    <Setting Name="log4netCategory" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">JeromeTerry.PokerHandHistory.IISExpress.Management.Log</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
